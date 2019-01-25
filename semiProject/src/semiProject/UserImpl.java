@@ -22,15 +22,27 @@ public class UserImpl implements User {
 			StringBuffer sb = new StringBuffer();
 			
 			// UserNum 자동 생성
-			for (int i = 0; i < 5; i++) {
-				sb.append(Integer.toString(rnd.nextInt(10))); 
+			do {
+				for (int i = 0; i < 5; i++) {
+					sb.append(Integer.toString(rnd.nextInt(10))); 
+				}
+			} while(dao.checkUserNum(sb.toString()));
+			
+			dto.setUserNum(sb.toString());
+			
+			String userCode = "USER";
+			
+			while (true) {
+				System.out.println("[필수] 아이디를 입력해주세요.");
+				String id = br.readLine();
+				
+				if (dao.checkUserID(id)) {
+					System.out.println("중복된 아이디가 존재합니다");
+				} else {
+					dto.setId(id);
+					break;
+				}
 			}
-			
-			//dto.setUserNum(sb.toString());
-			dto.setUserNum("12022");
-			
-			System.out.println("[필수] 아이디를 입력해주세요.");
-			dto.setId(br.readLine());
 			
 			System.out.println("[필수] 비밀번호를 입력해주세요.");
 			dto.setPassword(br.readLine());
@@ -38,10 +50,8 @@ public class UserImpl implements User {
 			System.out.println("전화번호를 입력해주세요.");
 			dto.setTel(br.readLine());
 			
-			String userCode = "USER";
-			
 			try {
-				int result = dao.insertEmployee(dto, userCode);
+				int result = dao.insertUser(dto, userCode);
 				
 				if (result == 1) {
 					System.out.println(dto.getId() + "(님) 회원가입을 축하합니다.");
@@ -145,18 +155,118 @@ public class UserImpl implements User {
 		try {
 			int ch;
 			
-			udto = dao.searchMyInfo(udto);
+			String userNum = udto.getUserNum();
 			
-			if (udto == null) {
+			UserDTO dto = new UserDTO();
+			
+			dto = dao.searchMyInfo(userNum);
+			
+			if (dto == null) {
 				System.out.println("==================================================");
 				System.out.println("[Error] 등록된 아이디가 없습니다.");
 				System.out.println("==================================================");
 				return;
 			}
 			
-			System.out.println("아이디 : " + udto.getId());
-			System.out.println("전화번호 : " + udto.getTel());
-			System.out.println("포인트 : " + udto.getPoint());
+			System.out.println("아이디 : " + dto.getId());
+			System.out.println("전화번호 : " + dto.getTel());
+			
+			do {
+				System.out.println("1.뒤로가기");
+				ch = Integer.parseInt(br.readLine());
+				
+				return;
+			} while(ch != 1);
+		} catch (IOException e) {
+			System.out.println(e.toString());
+		}
+	}
+	
+	public void updateUserInfo() {
+		System.out.println("사용자 정보 수정");
+		
+		try {
+			int ch;
+			
+			String userNum = udto.getUserNum();
+			
+			UserDTO dto = new UserDTO();
+			
+			System.out.println("변경할 비밀번호?");
+			dto.setPassword(br.readLine());
+			
+			System.out.println("변경할 전화번호?");
+			dto.setTel(br.readLine());
+			
+			int result = dao.updateMyInfo(dto, userNum);
+			
+			if (result == 1) {
+				System.out.println("회원정보 수정 성공");
+			} else {
+				System.out.println("회원정보 수정 실패");
+				return;
+			}
+			
+			do {
+				System.out.println("1.뒤로가기");
+				ch = Integer.parseInt(br.readLine());
+				
+				return;
+			} while(ch != 1);
+		} catch (IOException e) {
+			System.out.println(e.toString());
+		}
+	}
+	
+	public void myPoint() {
+		System.out.println("포인트 조회");
+		
+		try {
+			PointDTO dto = new PointDTO();
+			int ch;
+			
+			String userNum = udto.getUserNum();
+			
+			dto = dao.searchMyPoint(userNum);
+			
+			if (dto == null) {
+				System.out.println("==================================================");
+				System.out.println("[Error] 등록된 포인트가 없습니다.");
+				System.out.println("==================================================");
+				return;
+			}
+			
+			System.out.println("포인트 : " + dto.getPoint());
+			System.out.println("적립날짜 : " + dto.getDate());
+			
+			do {
+				System.out.println("1.뒤로가기");
+				ch = Integer.parseInt(br.readLine());
+				
+				return;
+			} while(ch != 1);
+		} catch (IOException e) {
+			System.out.println(e.toString());
+		}
+	}
+	
+	public void deleteUser() {
+		System.out.println("회원 탈퇴");
+		
+		try {
+			int ch;
+			
+			String userNum = udto.getUserNum();
+			
+			int result = dao.deleteUser(userNum);
+			
+			if (result == 1) {
+				System.out.println("회원탈퇴 완료");
+				udto = null;
+			} else {
+				System.out.println("회원탈퇴 실패");
+				return;
+			}
 			
 			do {
 				System.out.println("1.뒤로가기");

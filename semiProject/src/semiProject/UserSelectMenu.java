@@ -64,6 +64,30 @@ public class UserSelectMenu {
 		}
 	}
 	
+	public void userBookMarkMenu() throws IOException{
+		int ch;
+		
+		try {
+			do {
+				//clearScreen();
+				System.out.println("유저 즐겨찾기");
+				System.out.println("==================================================");
+				System.out.println("1.즐겨찾기 삭제 2.상세보기 3.뒤로가기");
+				System.out.println("==================================================");
+				System.out.print("선택 => ");
+				ch = Integer.parseInt(br.readLine());
+			} while (ch < 1 || ch > 3);
+
+			switch (ch) {
+			case 1 : System.out.println("즐겨찾기 삭제"); break;
+			case 2 : System.out.println("상세보기"); break;
+			case 3 : userLoginMenu(); break;
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+	}
+	
 	public void userInfoMenu() throws IOException{
 		int ch;
 		
@@ -80,9 +104,9 @@ public class UserSelectMenu {
 
 			switch (ch) {
 			case 1 : us.userInfo(); break;
-			case 2 : System.out.println("회원정보 수정"); break;
-			case 3 : System.out.println("포인트 조회"); break;
-			case 4 : System.out.println("탈퇴"); break;
+			case 2 : us.updateUserInfo(); break;
+			case 3 : us.myPoint(); break;
+			case 4 : us.deleteUser(); break;
 			case 5 : userLoginMenu(); break;
 			}
 		} catch (Exception e) {

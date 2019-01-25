@@ -14,36 +14,36 @@ public class Cartegory {
 	private Connection conn = DBConn.getConnection();
 	private List<String> cartegoryCode = new ArrayList<>(); // CaregoryCode: 분류코드
 	private List<String> cartegoryName = new ArrayList<>(); // CaregoryName: 분류명리스트
-
+	
+	public Cartegory() {
+		readCartegory();
+	}
+	
 	public List<String> getCartegoryCode() {
 		return cartegoryCode;
-	}
-
-	public void setCartegoryCode(List<String> cartegoryCode) {
-		this.cartegoryCode = cartegoryCode;
 	}
 
 	public List<String> getCartegoryName() {
 		return cartegoryName;
 	}
 
-	public void setCartegoryName(List<String> cartegoryName) {
-		this.cartegoryName = cartegoryName;
-	}
-
-	public void readCartegoryMap() {
+	public void readCartegory() {
 
 		PreparedStatement psmt = null;
 		ResultSet rs = null;
 
 		try {
-			String sql = "Select * FROM tb_user_menu";
+			String sql = "Select * FROM tb_usermenu";
 			psmt = conn.prepareStatement(sql);
 			rs = psmt.executeQuery();
 
-			if (rs.next()) {
+			//정보가 계속 이어서 들어갈 수 있으니 읽어올 때마다 비워줘야함.
+			cartegoryCode.clear();
+			cartegoryName.clear();
+			
+			while (rs.next()) {
 				cartegoryCode.add(rs.getString("foodCode"));
-				cartegoryCode.add(rs.getString("codeName"));
+				cartegoryName.add(rs.getString("codeName"));			
 			}
 
 		} catch (SQLException e) {
@@ -59,7 +59,12 @@ public class Cartegory {
 			}
 		}
 	}
-
-	// 카테고리 추가 삭제는 추가하삼.
+	
+	//카테고리 메뉴 보여줌. 1.중식 2.일식 3.한식 4.양식 5.분식  요렇게.
+	public void showCartegory() {		
+		for(int i=0; i<cartegoryName.size(); i++)
+			System.out.print(i+1+"."+cartegoryName.get(i)+" ");
+		System.out.println();
+	}
 
 }
