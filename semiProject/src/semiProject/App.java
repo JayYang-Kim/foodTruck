@@ -8,14 +8,11 @@ public class App {
 		AppMenu menu = new AppMenu();
 		
 		try {
-			System.out.println("==================================================");
-			System.out.println("ÇªµåÆ®·° ÄÜ¼Ö ¾Û");
-			System.out.println("==================================================");
-			
 			menu.mainMenu();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}	
+		} catch (Exception e) {
+			System.out.println(e.toString());
+		}
+		
 	}
 	
 }
