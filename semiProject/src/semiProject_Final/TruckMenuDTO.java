@@ -1,19 +1,19 @@
 package semiProject_Final;
 
 public class TruckMenuDTO {
-	private String menuCode;  //메뉴 코드
+	private int menuCode;  //메뉴 코드 // 20190129 Check 사항
 	private String menuName;  //메뉴명
 	private String aboutMenu; //메뉴설명
 	private int price;        //가격
 	
-	public String getMenuCode() {
+	public int getMenuCode() {
 		return menuCode;
 	}
 
-	public void setMenuCode(String menuCode) {
+	public void setMenuCode(int menuCode) {
 		this.menuCode = menuCode;
 	}
-
+	
 	public String getMenuName() {
 		return menuName;
 	}

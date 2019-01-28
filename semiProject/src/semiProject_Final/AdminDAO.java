@@ -150,4 +150,126 @@ public class AdminDAO {
 		
 		return list;
 	}
+	
+	// 차단 여부를 수정할 아이디 조회 (유저)
+	public UserDTO searchBlackUser(String id) {
+		UserDTO dto = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql;
+
+		try {
+			sql = "SELECT userNum, id, pwd, tel, blackList, userCode FROM tb_user WHERE id = ? AND userCode = 'USER'";
+
+			pstmt = conn.prepareCall(sql);
+			
+			pstmt.setString(1, id);
+			
+			rs = pstmt.executeQuery();
+			
+			if (rs.next()) {
+				dto = new UserDTO();
+				dto.setUserNum(rs.getString("userNum"));
+				dto.setId(rs.getString("id"));
+				dto.setPassword(rs.getString("pwd"));
+				dto.setTel(rs.getString("tel"));
+				dto.setBlacklist(rs.getString("blackList"));
+			}
+		} catch (SQLException e) {
+			System.out.println(e.toString());
+		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (Exception e2) {
+				}
+			}
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (Exception e2) {
+				}
+			}
+		}
+		
+		return dto;
+	}
+	
+	// 차단 여부를 수정할 아이디 조회 (점주)
+	public UserDTO searchBlackFoodTruck(String id) {
+		UserDTO dto = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql;
+
+		try {
+			sql = "SELECT userNum, id, pwd, tel, blackList, userCode FROM tb_user WHERE id = ? AND userCode = 'TRUCK'";
+
+			pstmt = conn.prepareCall(sql);
+			
+			pstmt.setString(1, id);
+			
+			rs = pstmt.executeQuery();
+			
+			if (rs.next()) {
+				dto = new UserDTO();
+				dto.setUserNum(rs.getString("userNum"));
+				dto.setId(rs.getString("id"));
+				dto.setPassword(rs.getString("pwd"));
+				dto.setTel(rs.getString("tel"));
+				dto.setBlacklist(rs.getString("blackList"));
+			}
+		} catch (SQLException e) {
+			System.out.println(e.toString());
+		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (Exception e2) {
+				}
+			}
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (Exception e2) {
+				}
+			}
+		}
+		
+		return dto;
+	}
+	
+	// 차다연부 수정 (유저)
+	public int updateBlackUser(String status, String id) {
+		int result = 0;
+		PreparedStatement pstmt = null;
+		String sql;
+
+		try {
+			sql = "UPDATE tb_user SET blacklist = ? WHERE id = ? AND userCode = 'USER'";
+
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setString(1, status);
+			pstmt.setString(2, id);
+
+			result = pstmt.executeUpdate();
+		} catch (SQLException e) {
+			System.out.println(e.toString());
+		}catch (Exception e) {
+			System.out.println(e.toString());
+		} finally {
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (Exception e2) {
+
+				}
+			}
+		}
+
+		return result;
+	}
+	
+	// 차다연부 수정 (점주)
 }

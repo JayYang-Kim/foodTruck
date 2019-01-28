@@ -62,6 +62,7 @@ public class TruckSelectMenu {
 					truckInfoMenu();
 					break;
 				case 2:
+					Clear.clearScreen();
 					tm.showReview();
 					break;
 				case 3:
@@ -105,9 +106,7 @@ public class TruckSelectMenu {
 					Clear.clearScreen();
 					System.out.println("======================================");
 					System.out.println("가게 정보");
-					System.out.println("유저 메소드에서 트럭 상세정보 보기 가져오기");
-
-					System.out.println("======================================");
+					tm.showFoodTruckInfo();
 
 					System.out.println("1.가게 정보 수정 2.뒤로가기");
 					System.out.print("선택 => ");
@@ -170,8 +169,6 @@ public class TruckSelectMenu {
 				int ch;
 				do {
 					Clear.clearScreen();
-					System.out.println("메뉴 수정");
-					System.out.println("======================================");
 					tm.showFoodMenu();
 					System.out.println("======================================");
 					System.out.println("1.메뉴 추가 2.메뉴 수정 3.메뉴 삭제 4.뒤로가기");
@@ -193,9 +190,9 @@ public class TruckSelectMenu {
 					return;
 				}
 
-			} catch (InterruptedException e) {
-				System.out.println(e.toString());
 			} catch (IOException e) {
+				System.out.println(e.toString());
+			} catch (InterruptedException e) {
 				System.out.println(e.toString());
 			}
 		}
@@ -216,7 +213,7 @@ public class TruckSelectMenu {
 					System.out.println("1.정보 수정  2.탈퇴하기 3.뒤로가기");
 					System.out.print("선택 => ");
 					ch = Integer.parseInt(br.readLine());
-				} while (ch < 1 || ch > 2);
+				} while (ch < 1 || ch > 3);
 
 				switch (ch) {
 				case 1:

@@ -3,12 +3,17 @@ package semiProject_Final;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TruckServiceImpl implements TruckService {
 	public BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 	private TruckUserDTO loginUserDTO = null; // 트럭 회원 번호 로그인시 받아주기.
 	private TruckUserDAO dao = new TruckUserDAO();
+	private TruckMenuDAO mdao = new TruckMenuDAO();
 	private boolean open = false; // 개점하면 true 개점하지 않으면 이동이나 마감 못함.
 
 	@Override
@@ -119,6 +124,13 @@ public class TruckServiceImpl implements TruckService {
 	public boolean logOut() {
 		try {
 			Clear.clearScreen();
+			// 마감 처리 안하면 로그아웃 안됨.
+			if (open) {
+				System.out.println("======================================");
+				System.out.println("마감처리를 한 후 로그아웃 해주십시오. ");
+				return false;
+			}
+
 			System.out.println("======================================");
 			System.out.println("로그아웃 하시겠습니까?[y/n] ");
 			char a = br.readLine().charAt(0);
@@ -141,45 +153,195 @@ public class TruckServiceImpl implements TruckService {
 
 	@Override
 	public void showFoodMenu() {
-		System.out.println("음식 메뉴를 보여줍니다.");
+		System.out.println("======================================");
+		System.out.println("음식 메뉴");
 
+		List<TruckMenuDTO> list = mdao.showFoodMenu(loginUserDTO.getTruckNum());
+
+		for (TruckMenuDTO dto : list) {
+			System.out.print(dto.getMenuName() + "\t");
+			System.out.print(dto.getPrice() + "\t");
+			System.out.print(dto.getAboutMenu() + "\n");
+		}
 	}
 
 	@Override
 	public void insertMenu() {
-		System.out.println("음식 메뉴를 추가합니다. 추가 여부 묻기");
+		try {
+			Clear.clearScreen();
+			System.out.println("======================================");
+			System.out.println("음식 메뉴 추가");
+			TruckMenuDTO mdto = new TruckMenuDTO();
 
+			System.out.print("메뉴명을 입력하세요.");
+			mdto.setMenuName(br.readLine());
+
+			System.out.print("가격을 입력하세요.");
+			mdto.setPrice(Integer.parseInt(br.readLine()));
+
+			System.out.print("메뉴설명을 입력하세요.");
+			mdto.setAboutMenu(br.readLine());
+
+			int result = mdao.insertMenu(mdto, loginUserDTO.getTruckNum());
+
+			if (result == 1) {
+				System.out.println("메뉴추가를 성공했습니다.");
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (NumberFormatException e) {
+			System.out.println("메뉴추가를 실패했습니다. 다시 입력하세요.");
+		} catch (InterruptedException e) {
+			System.out.println(e.toString());
+		} catch (SQLException e) {
+			System.out.println("메뉴추가를 실패했습니다. 다시 입력하세요.");
+		}
 	}
 
 	@Override
 	public void updateMenu() {
-		System.out.println("음식 메뉴를 수정합니다. 수정 여부 묻기");
+		try {
+			Clear.clearScreen();
+			System.out.println("======================================");
+			System.out.println("음식 메뉴 수정");
 
+			TruckMenuDTO mdto = new TruckMenuDTO();
+			int menuCode;
+			do {
+				System.out.print("수정할 메뉴명을 입력하세요");
+				String menuName = br.readLine();
+
+				menuCode = mdao.readMenuCode(menuName, loginUserDTO.getTruckNum());
+
+				if (menuCode == -1) {
+					System.out.println("존재하지 않는 메뉴명입니다. 다시 입력하세요.");
+				}
+
+				mdto.setMenuCode(menuCode);
+			} while (menuCode == -1);
+
+			System.out.print("새로운 메뉴명을 입력하세요.");
+			mdto.setMenuName(br.readLine());
+
+			System.out.print("가격을 입력하세요.");
+			mdto.setPrice(Integer.parseInt(br.readLine()));
+
+			System.out.print("메뉴설명을 입력하세요.");
+			mdto.setAboutMenu(br.readLine());
+
+			int result = mdao.updateMenu(mdto);
+
+			if (result == 1) {
+				System.out.println("메뉴수정을 성공했습니다.");
+			}
+
+		} catch (Exception e) {
+			System.out.println("메뉴수정을 실패했습니다. 다시 입력하세요.");
+		}
 	}
 
 	@Override
 	public void deleteMenu() {
-		System.out.println("음식 메뉴를 삭제합니다. 삭제 여부 묻기");
+		try {
+			int result;
+			do {
+				Clear.clearScreen();
+				System.out.println("======================================");
+				System.out.println("음식 메뉴 삭제");
+				System.out.print("삭제할 메뉴명을 입력하세요.");
+				String menuName = br.readLine();
 
+				result = mdao.deleteMenu(menuName, loginUserDTO.getTruckNum());
+
+				if (result != 1) {
+					System.out.println("존재하지 않는 메뉴명입니다. 다시 입력하세요.");
+				}
+
+			} while (result != 1);
+
+			System.out.println("메뉴 삭제가 완료되었습니다.");
+
+		} catch (Exception e) {
+			System.out.println(e.toString());
+		}
 	}
 
 	@Override
 	public void updateReservation() {
-		System.out.println("예약 가능여부 바꾸기");
-		System.out.println("바꾸시겠습니까? 취소하시겠습니까?");
+		try {
+			Clear.clearScreen();
+			System.out.println("======================================");
+			System.out.println("예약 여부 변경");
 
+			int result = -1;
+			String s;
+			System.out.print("예약가능 [Y], 예약불가[N] => ");
+			s = br.readLine();
+			if (s.equals("Y") || s.equals("y") || s.equals("N") || s.equals("n")) {
+				loginUserDTO.setReserveOK(s.toUpperCase());
+				result = dao.updateReservation(loginUserDTO);
+			}
+
+			if (result != 1) {
+				System.out.println("변경을 실패하였습니다. 다시 시도해주세요.");
+			} else if (result == 1) {
+
+				if (s.equals("Y") || s.equals("y")) {
+					System.out.println("[예약가능] 으로 변경되었습니다.");
+				} else if (s.equals("N") || s.equals("n")) {
+					System.out.println("[예약불가] 로 변경되었습니다.");
+				}
+			}
+
+		} catch (Exception e) {
+			System.out.println(e.toString());
+		}
 	}
 
 	@Override
 	public void updateMemo() {
-		System.out.println("홍보 게시판 내용 바꾸기");
-		System.out.println("바꾸시겠습니까? 취소하시겠습니까?");
+
+		try {
+			Clear.clearScreen();
+			System.out.println("======================================");
+			System.out.println("공지사항 내용 변경");
+
+			int result;
+			do {
+				System.out.println("변경할 내용을 입력하세요.");
+				String memo = br.readLine();
+				loginUserDTO.setMemo(memo);
+				result = dao.updateMemo(loginUserDTO);
+
+				if (result != 1) {
+					System.out.println("변경을 실패하였습니다. 다시 입력하세요.");
+
+				}
+			} while (result != 1);
+
+			System.out.println("공지사항 변경이 완료되었습니다.");
+
+		} catch (Exception e) {
+			System.out.println(e.toString());
+		}
 	}
 
 	@Override
 	public void showReview() {
+		printReview();
+		char ch = '1';
+		do {
+			try {
+				System.out.println("뒤로가기[0]: ");
+				ch = br.readLine().charAt(0);
+			} catch (IOException e) {
+			}
+		} while (ch != '0');
+	}
+
+	private void printReview() {
 		try {
-			Clear.clearScreen();
 			List<ReviewDTO> reviewList = new ReviewDAO().readReviews(loginUserDTO.getTruckNum());
 
 			if (reviewList.isEmpty()) {
@@ -196,44 +358,128 @@ public class TruckServiceImpl implements TruckService {
 				System.out.println("내용: " + dto.getReviewContent());
 				System.out.println("======================================");
 			}
-		} catch (InterruptedException e) {
-			System.out.println(e.toString());
 		} catch (IndexOutOfBoundsException e) {
 			return;
-		} finally {
-			char ch = '1';
-			do {
-				try {
-					System.out.println("뒤로가기[0]: ");
-					ch = br.readLine().charAt(0);
-				} catch (IOException e) {
-				}
-			} while (ch != '0');
 		}
-
 	}
 
 	@Override
 	public void open() {
+		Map<String, Object> analysisData = new HashMap<String, Object>();
+		String place = null;
+		String truckNum = null;
 
-		open = true;
+		try {
+			Clear.clearScreen();
+
+			if (open) {
+				System.out.println("======================================");
+				System.out.println("이미 개점처리가 완료되었습니다.");
+				return;
+			}
+			System.out.println("======================================");
+			System.out.println("개점");
+			System.out.println("장소를 입력하여 주십시오.");
+			place = br.readLine();
+
+			truckNum = loginUserDTO.getTruckNum();
+			analysisData.put("place", place);
+			analysisData.put("truckNum", truckNum);
+
+			if (place == null || dao.open(analysisData) != 1) {
+				System.out.println("개점 처리에 실패했습니다. 다시 실행하여 주십시오.");
+				open = false;
+			} else {
+				System.out.println("개점 처리가 완료 되었습니다.");
+				open = true;
+			}
+
+		} catch (IOException e) {
+			System.out.println(e.toString());
+		} catch (InterruptedException e) {
+			System.out.println(e.toString());
+		}
 	}
 
 	@Override
 	public void move() {
+		Map<String, Object> analysisData = new HashMap<String, Object>();
+		String place = null;
+		String truckNum = null;
+		int sale = 0;
 
-		if (!open) {
-			System.out.println("개점처리가 되지 않았습니다. 개점부터 해주십시오.");
-			return;
+		try {
+			Clear.clearScreen();
+
+			if (!open) {
+				System.out.println("개점처리가 되지 않았습니다. 개점부터 해주십시오.");
+				return;
+			}
+
+			System.out.println("======================================");
+			System.out.print("이동하기 전 매출액: ");
+			sale = Integer.parseInt(br.readLine());
+			if (sale < 0)
+				new NumberFormatException("0이나 양수만 입력 가능합니다.");
+
+			System.out.println("이동한 장소를 입력하여 주십시오.");
+			place = br.readLine();
+
+			truckNum = loginUserDTO.getTruckNum();
+			analysisData.put("place", place);
+			analysisData.put("truckNum", truckNum);
+			analysisData.put("sale", sale);
+
+			if (place == null || !dao.move(analysisData))
+				System.out.println("이동 처리에 실패하였습니다. 다시 실행하여 주십시오.");
+			else
+				System.out.println("이동 처리가 완료 되었습니다.");
+
+		} catch (IOException e) {
+			System.out.println(e.toString());
+		} catch (InterruptedException e) {
+			System.out.println(e.toString());
+		} catch (NumberFormatException e) {
+			System.out.println(e.toString());
 		}
-
 	}
 
 	@Override
 	public void close() {
-		if (!open) {
-			System.out.println("개점처리가 되지 않았습니다. 개점부터 해주십시오.");
-			return;
+		Map<String, Object> analysisData = new HashMap<String, Object>();
+		String truckNum = null;
+		int sale = 0;
+
+		try {
+			Clear.clearScreen();
+
+			if (!open) {
+				System.out.println("개점처리가 되지 않았습니다. 개점부터 해주십시오.");
+				return;
+			}
+
+			System.out.println("======================================");
+			System.out.print("마감하기 전 매출액: ");
+			sale = Integer.parseInt(br.readLine());
+			if (sale < 0)
+				new NumberFormatException("0이나 양수만 입력 가능합니다.");
+
+			truckNum = loginUserDTO.getTruckNum();
+			analysisData.put("truckNum", truckNum);
+			analysisData.put("sale", sale);
+
+			if (!dao.close(analysisData))
+				System.out.println("마감 처리에 실패하였습니다. 다시 실행하여 주십시오.");
+			else {
+				System.out.println("마감 처리가 완료 되었습니다.");
+				open = false;
+			}
+		} catch (IOException e) {
+			System.out.println(e.toString());
+		} catch (InterruptedException e) {
+			System.out.println(e.toString());
+		} catch (NumberFormatException e) {
+			System.out.println(e.toString());
 		}
 
 	}
@@ -247,14 +493,21 @@ public class TruckServiceImpl implements TruckService {
 				return;
 			}
 			// 수정하다 말음.
-			List<ReservationDTO> reservationList = null;
+			List<ReservationDTO> rlist = new ArrayList<>();
+			System.out.println("\n예약 확인....");
 
-		} catch (InterruptedException e) {
-			System.out.println(e.toString());
-		} catch (IndexOutOfBoundsException e) {
-			return;
-		} finally {
+			rlist = dao.confirmBookDAO(loginUserDTO.getTruckNum());
+
+			System.out.println("상호명\t메뉴\t결제금액\t날짜");
+			for (ReservationDTO rdto : rlist) {
+				System.out.println("유저ID : " + rdto.getUserId());
+				System.out.println("메뉴 : " + rdto.getMenu());
+				System.out.println("결제금액 : " + rdto.getTotalPay());
+				System.out.println("날짜 : " + rdto.getPayDate());
+			}
+
 			char ch = '1';
+
 			do {
 				try {
 					System.out.println("뒤로가기[0]: ");
@@ -262,26 +515,128 @@ public class TruckServiceImpl implements TruckService {
 				} catch (IOException e) {
 				}
 			} while (ch != '0');
-		}
 
+		} catch (InterruptedException e) {
+			System.out.println(e.toString());
+		}
 	}
 
 	@Override
 	public void showUserInfo() {
-		System.out.println("점주 정보 출력");
 
+		try {
+			Clear.clearScreen();
+			System.out.println("======================================");
+			System.out.println("사용자 정보");
+			String truckNum = loginUserDTO.getTruckNum();
+
+			TruckUserDTO dto = new TruckUserDTO();
+
+			dto = dao.showUserInfo(truckNum);
+
+			if (dto == null) {
+				System.out.println("등록된 아이디가 없습니다.");
+				return;
+			}
+
+			System.out.println("아이디: " + dto.getId());
+			System.out.println("전화번호: " + dto.getTel());
+			System.out.println("상호명: " + dto.getTruckName());
+			System.out.println("대표자: " + dto.getOwner());
+
+		} catch (Exception e) {
+			System.out.println(e.toString());
+		}
 	}
 
 	@Override
 	public void updateUserInfo() {
-		System.out.println("점주 정보 수정");
 
+		try {
+			Clear.clearScreen();
+			System.out.println("======================================");
+			System.out.println("사용자 정보 수정");
+
+			System.out.println("변경할 비밀번호를 입력하세요.");
+			loginUserDTO.setPassword(br.readLine());
+
+			System.out.println("변경할 전화번호를 입력하세요.");
+			loginUserDTO.setTel(br.readLine());
+
+			int result = dao.updateUserInfo(loginUserDTO);
+
+			if (result == 1) {
+				System.out.println("회원정보 수정을 성공했습니다.");
+			} else {
+				System.out.println("회원정보 수정 실패했습니다.");
+
+			}
+
+		} catch (Exception e) {
+			System.out.println(e.toString());
+		}
 	}
 
 	@Override
 	public boolean withdraw() {
-		System.out.println("탈퇴하면 true, 아니면 false");
+		int ch;
 
-		return true;
+		try {
+			Clear.clearScreen();
+			System.out.println("======================================");
+			System.out.println("회원 탈퇴");
+			System.out.println("회원탈퇴 하시겠습니까?[y/n]");
+			ch = br.readLine().charAt(0);
+
+			if (ch == 'y' || ch == 'Y') {
+				String userNum = loginUserDTO.getTruckNum();
+
+				int result = dao.deleteUser(userNum);
+
+				if (result == 1) {
+					System.out.println("회원탈퇴 완료");
+					loginUserDTO = null;
+					return true;
+				} else {
+					System.out.println("회원탈퇴 실패");
+					return false;
+				}
+			} else {
+				System.out.println("회원탈퇴 취소되었습니다.");
+			}
+		} catch (IOException e) {
+			System.out.println(e.toString());
+		} catch (InterruptedException e) {
+			System.out.println(e.toString());
+		}
+
+		return false;
+	}
+
+	public void showFoodTruckInfo() {
+		try {
+			System.out.println(
+					"가게이름 : " + loginUserDTO.getTruckName() + " (전체평점 : " + loginUserDTO.getReviewScoreAve() + ")");
+			System.out.println("메뉴");
+			showFoodMenu();
+			System.out.println("======================================");
+			System.out.println("영업시간 :" + loginUserDTO.getOpenHour().substring(0, 2) + ":"
+					+ loginUserDTO.getOpenHour().substring(2) + "~" + loginUserDTO.getCloseHour().substring(0, 2) + ":"
+					+ loginUserDTO.getCloseHour().substring(2));
+			if (loginUserDTO.getReserveOK().equals("Y"))
+				System.out.println("예약 가능 여부 : 예약이 가능합니다. ");
+			else
+				System.out.println("예약 가능 여부 : 예약이 불가능합니다. ");
+			System.out.println("전화 번호 : " + loginUserDTO.getTel());
+			System.out.println("위치 : " + loginUserDTO.getAddress());
+			System.out.println("공지사항 : " + loginUserDTO.getMemo());
+			// 리뷰내용
+			System.out.println("======================================");
+			System.out.println("사용자 리뷰");
+			printReview();
+
+		} catch (Exception e) {
+			System.out.println(e.toString());
+		}
 	}
 }

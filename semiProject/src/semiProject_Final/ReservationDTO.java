@@ -10,6 +10,7 @@ public class ReservationDTO {
 	public String paySort;    //결제구분명 (카드인지 현금인지)
 	public String cardName;   //카드명(카드 선택했으면 입력하기)
 	public String payDate;    //결제일
+	private String menu;      //
 	
 	public String getUserId() {
 		return userId;
@@ -64,5 +65,11 @@ public class ReservationDTO {
 	}
 	public void setCardName(String cardName) {
 		this.cardName = cardName;
+	}
+	public String getMenu() {
+		return menu;
+	}
+	public void setMenu(String menu) {
+		this.menu = menu;
 	}	
 }

@@ -23,5 +23,5 @@ interface TruckService {
 	public void showUserInfo();            //회원정보 출력
 	public void updateUserInfo();          //회원정보 수정
 	public boolean withdraw();             //회원탈퇴
-	
+	public void showFoodTruckInfo();       //트럭 유저 상세정보 출력
 }

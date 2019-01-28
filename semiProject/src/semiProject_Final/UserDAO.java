@@ -390,28 +390,29 @@ public class UserDAO {
 	}
 	
 	//예약확인
-	public List<ReservationDTO> confirmBookDAO(String cnum){	//유저번호 받아서  예약 리스트 리턴
-		List<ReservationDTO> list  = new ArrayList<>();
+	public List<ReservationDTO> confirmBookDAO(String num) { // 유저번호, 트럭번호 받아서 예약 리스트 리턴
+		List<ReservationDTO> list = new ArrayList<>();
 		PreparedStatement pstmt = null;
 		StringBuilder sb = new StringBuilder();
 		ResultSet rs = null;
 
 		try {
-			sb.append("select b.tnum,b.cnum,tname,u.id,nvl(money,0) money,pointuse,");
-			sb.append("p.payname,cardcom, to_char(reserveday,'yyyy-mm-dd hhmiss') reserveday");
+			sb.append("select b.tnum,b.cnum,tname,id,nvl(money,0) money,pointuse,");
+			sb.append("payname,cardcom, to_char(reserveday,'yyyy-mm-dd hhmiss') reserveday, reservemenu");
 			sb.append("from tb_reservation b");
 			sb.append("left outer join tb_payment p on  b.paycode= p.paycode");
 			sb.append("left outer join tb_foodtruck f on b.tnum = f.tnum");
 			sb.append("left outer join tb_user u on b.cnum = u.usernum");
 			sb.append("left outer join tb_card c on b.reservenum = c.reservenum");
+			sb.append("left outer join tb_reservemenu m on b.reservenum = m.reservenum");
 			sb.append("where b.cnum = ?");
-			sb.append("order by reserveday");
-			
+			sb.append("order by reserveday desc");
+
 			pstmt = conn.prepareStatement(sb.toString());
-			pstmt.setString(1, cnum);
+			pstmt.setString(1, num);
 			rs = pstmt.executeQuery();
-			
-			while(rs.next()) {
+
+			while (rs.next()) {
 				ReservationDTO dto = new ReservationDTO();
 				dto.setTruckNum(rs.getString("tnum"));
 				dto.setUserNum(rs.getString("cnum"));
@@ -422,48 +423,164 @@ public class UserDAO {
 				dto.setPaySort(rs.getString("payname"));
 				dto.setCardName(rs.getString("cardcom"));
 				dto.setPayDate(rs.getString("reserveday"));
-				
-				list.add(dto);	
+				dto.setMenu(rs.getString("reservemenu"));
+
+				list.add(dto);
 			}
-		} catch (Exception e) {			
-		}		
+		} catch (Exception e) {
+		}
 		return list;
 	}
 	
 	//근처 트럭
-	public List<PlaceVO> searchNearTruck(String userAddr){
-		List<PlaceVO> tlist = new ArrayList<>();	//전체 푸드트럭 리스트 가져오기
-		List<PlaceVO> pvlist = new ArrayList<>();	//1km 이내의 푸드트럭 가져오기
+	public List<PlaceVO> searchNearTruck(String userAddr) {
+		List<PlaceVO> tlist = new ArrayList<>(); // 전체 푸드트럭 리스트 가져오기
+		List<PlaceVO> pvlist = new ArrayList<>(); // 1km 이내의 푸드트럭 가져오기
 		PreparedStatement pstmt = null;
 		StringBuilder sb = new StringBuilder();
 		ResultSet rs = null;
-		
 
 		try {
 			sb.append("select f.tnum,tname avgscore, place");
 			sb.append(" from tb_foodtruck f");
 			sb.append(" left outer join tb_analysis a on f.tnum = a.tnum");
-		
+
 			pstmt = conn.prepareStatement(sb.toString());
 			rs = pstmt.executeQuery();
-			while(rs.next()) {
+			while (rs.next()) {
 				PlaceVO pv = new PlaceVO();
 				pv.setTnum(rs.getString("tnum"));
 				pv.setTname(rs.getString("tname"));
 				pv.setAvgscore(rs.getDouble("avgscore"));
 				pv.setPlace("place");
-				
+
 				tlist.add(pv);
 			}
 			MapAPI mapi = new MapAPI();
-			pvlist = mapi.searchTruckApi(tlist, userAddr); //1km 이내의 푸드트럭 가져오기
-			
+			pvlist = mapi.searchTruckApi(tlist, userAddr); // 1km 이내의 푸드트럭 가져오기
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		return pvlist;
-	} 
+	}
+	
+	//선택한 트럭 정보 저장하는 메소드
+	public TruckUserDTO selectTruck(String tnum) {
+		TruckUserDTO tdto = new TruckUserDTO();
+
+		PreparedStatement pstmt = null;
+		StringBuilder sb = new StringBuilder();
+		ResultSet rs = null;
+
+		try {
+			sb.append("select f.tnum, id, pwd, tel, blacklist, tname,");
+			sb.append("owner, place, foodcode, opentime, closetime, post, reserveok, avgscore");
+			sb.append(" from tb_foodtruck f");
+			sb.append(" left outer join tb_user u on f.tnum = u.usernum");
+			sb.append(" left outer join tb_analysis a on f.tnum = a.tnum");
+			sb.append(" where f.tnum = ?");
+
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setString(1, tnum);
+			rs = pstmt.executeQuery();
+
+			if (rs.next()) {
+				tdto = new TruckUserDTO();
+				tdto.setTruckNum(rs.getString("tnum"));
+				tdto.setId(rs.getString("id"));
+				tdto.setPassword(rs.getString("pwd"));
+				tdto.setTel(rs.getString("tel"));
+				tdto.setBlaklist(rs.getString("blacklist"));
+				tdto.setTruckName(rs.getString("tname"));
+				tdto.setOwner(rs.getString("owver"));
+				tdto.setAddress(rs.getString("place"));
+				tdto.setCartegoryCode(rs.getString("foodcode"));
+				tdto.setOpenHour(rs.getString("opentime"));
+				tdto.setCloseHour(rs.getString("closetime"));
+				tdto.setMemo("post");
+				tdto.setReserveOK("reserveok");
+				tdto.setReviewScoreAve(rs.getDouble("avgscore"));
+
+			} else {
+				// 존재하지 않을 때
+				throw new Exception("트럭이 존재하지 않습니다.");
+			}
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+
+		return tdto;
+	}
+
+	// 선택한 트럭 정보 저장하는 메소드 0128
+	public List<TruckMenuDTO> selectTruckMenu(String tnum) {
+		List<TruckMenuDTO> mlist = new ArrayList<>();
+
+		PreparedStatement pstmt = null;
+		StringBuilder sb = new StringBuilder();
+		ResultSet rs = null;
+
+		try {
+			sb.append("select menucode, tnum, menuname, price, explain");
+			sb.append(" from tb_menu");
+			sb.append(" where tnum = ?");
+
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setString(1, tnum);
+			rs = pstmt.executeQuery();
+
+			while (rs.next()) {
+				TruckMenuDTO mdto = new TruckMenuDTO();
+				mdto.setMenuCode(rs.getInt("menucode")); // 20190129 Check 사항
+				mdto.setMenuName(rs.getString("menuname"));
+				mdto.setPrice(rs.getInt("price"));
+				mdto.setAboutMenu("explain");
+
+				mlist.add(mdto);
+			}
+
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+
+		return mlist;
+	}
+
+	// 리뷰내용을 리턴
+	public List<ReviewDTO> selectTruckReview(String tnum) {
+		List<ReviewDTO> rlist = new ArrayList<>();
+
+		PreparedStatement pstmt = null;
+		StringBuilder sb = new StringBuilder();
+		ResultSet rs = null;
+
+		try {
+			sb.append("select reviewnum, cnum, tnum, reviewcontent, reviewday, reviewscore");
+			sb.append(" from tb_review");
+			sb.append(" where tnum = ?");
+
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setString(1, tnum);
+			rs = pstmt.executeQuery();
+
+			while (rs.next()) {
+				ReviewDTO rdto = new ReviewDTO();
+				rdto.setUserid(rs.getString("cnum"));
+				rdto.setDate(rs.getString("reviewday"));
+				rdto.setReviewContent(rs.getString("reviewcontent"));
+				rdto.setReviewScore(rs.getInt("reviewscore"));
+
+				rlist.add(rdto);
+			}
+
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+
+		return rlist;
+	}
 	
 	//PlaceVO
 	public class PlaceVO{

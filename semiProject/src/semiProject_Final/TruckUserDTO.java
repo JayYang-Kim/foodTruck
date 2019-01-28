@@ -17,7 +17,6 @@ public class TruckUserDTO {
 	private String reserveOK; //예약가능 여부
 	private double reviewScoreAve; //평균 평점(10점 만점, 소수점 한자리 가능)
 
-	
 	public String getTruckNum() {
 		return truckNum;
 	}
@@ -30,21 +29,17 @@ public class TruckUserDTO {
 		return id;
 	}
 
-	
 	public void setId(String id) {
 		this.id = id;
 	}
 
-	
 	public String getPassword() {
 		return password;
 	}
 
-	
 	public void setPassword(String password) {
 		this.password = password;
 	}
-
 	
 	public String getTel() {
 		return tel;

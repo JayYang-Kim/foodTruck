@@ -71,14 +71,16 @@ public class AdminServiceImpl implements AdminService {
 	public void listUser() {
 		try {
 			List<UserDTO> list = dao.searchUser();
+			//List<UserDTO> list = null;
 			
 			if (list.isEmpty()) {
 				System.out.println("등록된 유저 계정이 없습니다.");
 				return;
 			}
 			
-			for (UserDTO dto : list) {
-				System.out.printf("%s, %s, %s, %s\n", dto.getUserNum(), dto.getId(), dto.getTel(), dto.getBlacklist());
+			System.out.println("유저번호\t아이디\t전화번호\t차단여부");
+			for (UserDTO dto : list) {		
+				System.out.printf("%s\t %s\t %s\t %s\n", dto.getUserNum(), dto.getId(), dto.getTel(), dto.getBlacklist());
 			}
 		} catch (Exception e) {
 			
@@ -104,8 +106,9 @@ public class AdminServiceImpl implements AdminService {
 				return;
 			}
 			
-			for (UserDTO dto : list) {
-				System.out.printf("%s, %s, %s, %s\n", dto.getUserNum(), dto.getId(), dto.getTel(), dto.getBlacklist());
+			System.out.println("점주번호\t아이디\t전화번호\t차단여부");
+			for (UserDTO dto : list) {		
+				System.out.printf("%s\t %s\t %s\t %s\n", dto.getUserNum(), dto.getId(), dto.getTel(), dto.getBlacklist());
 			}
 		} catch (Exception e) {
 			
@@ -125,6 +128,57 @@ public class AdminServiceImpl implements AdminService {
 	@Override
 	public void setBlackUser() {
 		System.out.println("유저 블랙리스트 설정");
+		
+		try {
+			List<UserDTO> list = dao.searchUser();
+			
+			if (list.isEmpty()) {
+				System.out.println("등록된 유저 계정이 없습니다.");
+				return;
+			}
+			
+			System.out.println("유저번호\t아이디\t전화번호\t차단여부");
+			for (UserDTO dto : list) {		
+				System.out.printf("%s\t %s\t %s\t %s\n", dto.getUserNum(), dto.getId(), dto.getTel(), dto.getBlacklist());
+			}
+			
+			System.out.println("차단여부를 수정할 아이디를 입력해주세요.");
+			String id = br.readLine();
+			
+			UserDTO dto = new UserDTO();
+			
+			dto = dao.searchBlackUser(id);
+			
+			if (dto == null) {
+				System.out.println("등록된 아이디가 없습니다.");
+				return;
+			}
+			
+			System.out.println("유저번호\t아이디\t전화번호\t차단여부");
+			System.out.printf("%s\t %s\t %s\t %s\n", dto.getUserNum(), dto.getId(), dto.getTel(), dto.getBlacklist());
+			
+			System.out.println("차단여부를 입력해주세요.[y/n]");
+			int ch = br.readLine().charAt(0);
+			
+			if (ch == 'y' || ch == 'Y') {
+				
+			} else {
+				System.out.println("차단여부 수정을 취소했습니다.");
+				return;
+			}
+		} catch (Exception e) {
+			
+		} finally {
+			char ch = '1';
+			
+			do {
+				try {
+					System.out.println("뒤로가기[0]: ");
+					ch = br.readLine().charAt(0);
+				} catch (IOException e) {
+				}
+			} while (ch != '0');
+		}
 		
 	}
 	@Override
