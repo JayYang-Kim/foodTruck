@@ -14,9 +14,9 @@ import semiProject_Final.UserDAO.PlaceVO;
 
 public class UserServiceImpl implements UserService {
 	private BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-	private UserDAO dao;
-	private UserDTO udto;
-	private TruckUserDTO tdto;
+	private UserDAO dao = new UserDAO();
+	private UserDTO udto; // 로그인된 유저 dto
+	private TruckUserDTO tdto; // 선택된 트럭 dto
 
 	// 주변검색
 	@Override
@@ -133,13 +133,13 @@ public class UserServiceImpl implements UserService {
 			System.out.println("아이디 : " + dto.getId());
 			System.out.println("전화번호 : " + dto.getTel());
 
-			do {
+			/*do {
 				System.out.println("1.뒤로가기");
 				ch = Integer.parseInt(br.readLine());
 
 				return;
-			} while (ch != 1);
-		} catch (IOException e) {
+			} while (ch != 1);*/
+		} catch (Exception e) {
 			System.out.println(e.toString());
 		}
 	}
@@ -167,15 +167,15 @@ public class UserServiceImpl implements UserService {
 				System.out.println("회원정보 수정 성공");
 			} else {
 				System.out.println("회원정보 수정 실패");
-				return;
+				//return;
 			}
 
-			do {
+			/*do {
 				System.out.println("1.뒤로가기");
 				ch = Integer.parseInt(br.readLine());
 
 				return;
-			} while (ch != 1);
+			} while (ch != 1);*/
 		} catch (IOException e) {
 			System.out.println(e.toString());
 		}
@@ -203,45 +203,48 @@ public class UserServiceImpl implements UserService {
 			System.out.println("포인트 : " + dto.getPoint());
 			System.out.println("적립날짜 : " + dto.getDate());
 
-			do {
+			/*do {
 				System.out.println("1.뒤로가기");
 				ch = Integer.parseInt(br.readLine());
 
 				return;
-			} while (ch != 1);
-		} catch (IOException e) {
+			} while (ch != 1);*/
+		} catch (Exception e) {
 			System.out.println(e.toString());
 		}
 	}
 
 	// 회원 탈퇴
-	public void deleteUser() {
+	public boolean deleteUser() {
 		System.out.println("회원 탈퇴");
 
 		try {
 			int ch;
-
-			String userNum = udto.getUserNum();
-
-			int result = dao.deleteUser(userNum);
-
-			if (result == 1) {
-				System.out.println("회원탈퇴 완료");
-				udto = null;
+			
+			System.out.println("회원탈퇴 하시겠습니까?[y/n]");
+			ch = br.readLine().charAt(0);
+			
+			if (ch == 'y' || ch == 'Y') {
+				String userNum = udto.getUserNum();
+				
+				int result = dao.deleteUser(userNum);
+				
+				if (result == 1) {
+					System.out.println("회원탈퇴 완료");
+					udto = null;
+					return true;
+				} else {
+					System.out.println("회원탈퇴 실패");
+					return false;
+				}
 			} else {
-				System.out.println("회원탈퇴 실패");
-				return;
+				System.out.println("회원탈퇴 취소되었습니다.");
 			}
-
-			do {
-				System.out.println("1.뒤로가기");
-				ch = Integer.parseInt(br.readLine());
-
-				return;
-			} while (ch != 1);
 		} catch (IOException e) {
 			System.out.println(e.toString());
 		}
+		
+		return false;
 	}
 
 	// 회원가입
@@ -312,7 +315,7 @@ public class UserServiceImpl implements UserService {
 	public boolean logIn() {
 		String id;
 		String pwd;
-		boolean status = false;
+
 		System.out.println("[로그인]");
 		try {
 			System.out.println("아이디를 입력해주세요.");
@@ -322,24 +325,37 @@ public class UserServiceImpl implements UserService {
 			pwd = br.readLine();
 
 			udto = dao.loginUser(id, pwd);
-
+			
 			if (udto != null) {
-				System.out.println("로그인 되었습니다.");
-
+				if (udto.getBlacklist().equals("Y")) {
+					System.out.println("차단된 유저입니다. 관리자에게 문의바랍니다.");
+					return false;
+				} else {
+					System.out.println("로그인 되었습니다.");
+					return true;
+				}
 			} else {
 				System.out.println("로그인에 실패했습니다.");
+				return false;
 			}
-
+			
+			/*if (udto != null) {
+				System.out.println("로그인 되었습니다.");
+				return true;
+			} else {
+				System.out.println("로그인에 실패했습니다.");
+				return false;
+			}*/
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
-		return status;
+		return false;
 	}
 
 	// 로그아웃
 	@Override
-	public void logOut() {
+	public boolean logOut() {
 		char ch;
 
 		try {
@@ -347,15 +363,19 @@ public class UserServiceImpl implements UserService {
 			ch = br.readLine().charAt(0);
 
 			if (ch == 'Y' || ch == 'y') {
+				System.out.println("로그아웃 되셨습니다.");
 				udto = null;
-				return;
+				return true;
 			} else {
-				return;
+				System.out.println("로그아웃이 취소되었습니다.");
+				return false;
 			}
 
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		return false;
 	}
 
 	// 즐겨찾기 추가
@@ -414,6 +434,12 @@ public class UserServiceImpl implements UserService {
 			e.printStackTrace();
 		}
 
+	}
+
+	@Override
+	public void searchCode() {
+		// TODO Auto-generated method stub
+		
 	}
 
 	// 푸드트럭 상세리스트

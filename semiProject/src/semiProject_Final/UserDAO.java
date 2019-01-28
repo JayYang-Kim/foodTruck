@@ -11,6 +11,7 @@ import com.util.DBConn;
 
 public class UserDAO {
 	private Connection conn = DBConn.getConnection();
+	
 	//회원가입
 	public int insertUser(UserDTO dto, String userCode) throws SQLException {
 		int result = 0; 
@@ -44,6 +45,7 @@ public class UserDAO {
 		
 		return result;
 	}
+	
 	//로그인
 	public UserDTO loginUser(String id, String pwd) {
 		UserDTO dto = null;
@@ -53,17 +55,22 @@ public class UserDAO {
 
 		try {
 			sql = "select userNum, id, pwd, tel, blackList, userCode";
-			sql += " from user";
-			sql += " where id = ? AND pwd = ?";
+			sql += " from tb_user";
+			sql += " where id = ? AND pwd = ? AND userCode = 'USER'";
 
 			pstmt = conn.prepareCall(sql);
+			
 			pstmt.setString(1, id);
 			pstmt.setString(2, pwd);
+			
 			rs = pstmt.executeQuery();
+			
 			if (rs.next()) {
 				dto = new UserDTO();
+				dto.setUserNum(rs.getString("userNum"));
 				dto.setId(rs.getString("id"));
 				dto.setPassword(rs.getString("pwd"));
+				dto.setBlacklist(rs.getString("blackList"));
 			}
 		} catch (SQLException e) {
 			System.out.println(e.toString());
@@ -83,6 +90,7 @@ public class UserDAO {
 		}
 		return dto;
 	}
+	
 	// 회원정보 조회
 	public UserDTO searchMyInfo(String userNum) {
 		UserDTO udto = null;
@@ -118,6 +126,7 @@ public class UserDAO {
 		
 		return udto;
 	}
+	
 	// 회원정보 수정
 	public int updateMyInfo(UserDTO dto, String userNum) {
 		int result = 0;
@@ -150,6 +159,7 @@ public class UserDAO {
 
 		return result;
 	}
+	
 	// 포인트 조회
 	public PointDTO searchMyPoint(String userNum) {
 		PointDTO dto = null;
@@ -190,6 +200,7 @@ public class UserDAO {
 
 		return dto;
 	}
+	
 	// 회원 탈퇴
 	public int deleteUser(String userNum) {
 		int result = 0;
@@ -197,8 +208,9 @@ public class UserDAO {
 		String sql;
 
 		try {
-			sql = "DELETE FROM tb_user WHERE usernum = ?";
-
+			sql = "UPDATE tb_user SET userCode = 'DELETE' WHERE userNum = ?";
+			//sql = "DELETE FROM tb_user WHERE usernum = ?";
+			
 			pstmt = conn.prepareStatement(sql);
 			
 			pstmt.setString(1, userNum);
@@ -217,6 +229,7 @@ public class UserDAO {
 
 		return result;
 	}
+	
 	// userNum 중복 체크
 	public boolean checkUserNum(String userNum) {
 		ResultSet rs = null;
@@ -250,6 +263,7 @@ public class UserDAO {
 
 		return false;
 	}
+	
 	// userID 중복체크
 	public boolean checkUserID(String id) {
 		ResultSet rs = null;
@@ -281,6 +295,7 @@ public class UserDAO {
 		}
 		return false;
 	}
+	
 	//즐겨찾기 등록
 	public UserDTO insertBookmark(String cNum, String tNum) {
 		PreparedStatement pstmt = null;		
@@ -305,6 +320,7 @@ public class UserDAO {
 		}
 		return udto;
 	}
+	
 	//즐겨찾기 삭제
 	public UserDTO deleteBookmark(String cNum, String tNum) {
 		PreparedStatement pstmt = null;
@@ -333,6 +349,7 @@ public class UserDAO {
 		}
 		return udto;
 	}
+	
 	//즐겨찾기 출력
 	public List<UserDTO> printBookmark(String cNum) {
 		List<UserDTO> list = new ArrayList<>();
@@ -371,6 +388,7 @@ public class UserDAO {
 		}
 		return list;
 	}
+	
 	//예약확인
 	public List<ReservationDTO> confirmBookDAO(String cnum){	//유저번호 받아서  예약 리스트 리턴
 		List<ReservationDTO> list  = new ArrayList<>();
@@ -411,6 +429,7 @@ public class UserDAO {
 		}		
 		return list;
 	}
+	
 	//근처 트럭
 	public List<PlaceVO> searchNearTruck(String userAddr){
 		List<PlaceVO> tlist = new ArrayList<>();	//전체 푸드트럭 리스트 가져오기
@@ -445,6 +464,7 @@ public class UserDAO {
 		
 		return pvlist;
 	} 
+	
 	//PlaceVO
 	public class PlaceVO{
 		private String tnum;

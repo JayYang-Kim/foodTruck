@@ -8,7 +8,9 @@ public class AppMenu {
 
 	public BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 	// ListService ls = new ListService();
+	private UserSelectMenu usm = new UserSelectMenu();
 	private TruckSelectMenu tsm = new TruckSelectMenu();
+	private AdminSelectMenu asm = new AdminSelectMenu();
 
 	public void mainMenu() {
 		while (true) {
@@ -25,13 +27,13 @@ public class AppMenu {
 
 				switch (ch) {
 				case 1:
-					System.out.println("유저 메뉴가 들어갑니다.");
+					usm.mainMenu();
 					break;
 				case 2:
 					tsm.mainMenu();
 					break;
 				case 3:
-					System.out.println("관리자 메뉴가 들어갑니다.");
+					asm.mainMenu();
 					break;
 				case 4:
 					System.exit(0);
